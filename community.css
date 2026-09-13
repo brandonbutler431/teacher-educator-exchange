@@ -144,23 +144,23 @@
 
 /* -------------------------------------------------------------- buttons */
 
-.tex-btn {
+.texc-btn {
   padding: 12px 24px; border: 0; border-radius: 4px; background: var(--blue);
   color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;
   font-family: inherit; line-height: 1.2;
 }
-.tex-btn:hover { background: var(--blue-dark); }
-.tex-btn:disabled { opacity: .45; cursor: default; }
-.tex-btn-2 {
+.texc-btn:hover { background: var(--blue-dark); }
+.texc-btn:disabled { opacity: .45; cursor: default; }
+.texc-btn-2 {
   padding: 12px 24px; border: 1px solid #c8d6ea; border-radius: 4px; background: #fff;
   color: var(--navy); font-size: 15px; font-weight: 700; cursor: pointer;
   font-family: inherit; line-height: 1.2;
 }
-.tex-btn-2:hover { background: #eef4fd; }
-.tex-btn-sm { padding: 9px 16px; font-size: 13.5px; }
-.tex-btn-warn { background: var(--orange); }
-.tex-btn-warn:hover { background: var(--orange-dark); }
-.tex-btn:focus-visible, .tex-btn-2:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+.texc-btn-2:hover { background: #eef4fd; }
+.texc-btn-sm { padding: 9px 16px; font-size: 13.5px; }
+.texc-btn-warn { background: var(--orange); }
+.texc-btn-warn:hover { background: var(--orange-dark); }
+.texc-btn:focus-visible, .texc-btn-2:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
 
 /* ---------------------------------------------------------------- modal */
 

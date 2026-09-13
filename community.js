@@ -117,7 +117,7 @@ function signInModal(afterAuth) {
           <input class="tex-in" id="tex-e" type="email" autocomplete="email" required></div>
         <div class="tex-f"><label for="tex-p">Password</label>
           <input class="tex-in" id="tex-p" type="password" autocomplete="current-password" required></div>
-        <button class="tex-btn" type="submit" style="width:100%;margin-top:6px">Sign in</button>
+        <button class="texc-btn" type="submit" style="width:100%;margin-top:6px">Sign in</button>
         <div class="tex-m-alt"><button type="button" data-go="reset">Forgotten your password?</button></div>
         <div class="tex-m-alt">New here? <button type="button" data-go="join">Join the Community</button></div>
       </form></div>`;
@@ -170,7 +170,7 @@ function joinModal(afterAuth) {
             accounts unidentifiable, and follow the
             <a href="${GUIDELINES_URL}" target="_blank" rel="noopener">community guidelines</a>.</label>
         </div>
-        <button class="tex-btn" type="submit" style="width:100%;margin-top:14px">Create my account</button>
+        <button class="texc-btn" type="submit" style="width:100%;margin-top:14px">Create my account</button>
         <div class="tex-m-alt">Already a member? <button type="button" data-go="in">Sign in</button></div>
       </form></div>`;
 
@@ -213,7 +213,7 @@ function joinModal(afterAuth) {
           <p style="font-size:14px;line-height:1.55;color:#5b6879;margin:0 0 16px">
             Nothing in your inbox after a minute or two? Check the spam folder — university mail
             filters are enthusiastic.</p>
-          <button class="tex-btn-2" type="button" style="width:100%">Close</button>
+          <button class="texc-btn-2" type="button" style="width:100%">Close</button>
         </div>`;
       slot.querySelector("button").onclick = closeModal;
     });
@@ -232,7 +232,7 @@ function resetModal() {
       <div class="tex-m-body"><form novalidate>
         <div class="tex-f"><label for="tex-e">Email</label>
           <input class="tex-in" id="tex-e" type="email" autocomplete="email" required></div>
-        <button class="tex-btn" type="submit" style="width:100%;margin-top:6px">Send the link</button>
+        <button class="texc-btn" type="submit" style="width:100%;margin-top:6px">Send the link</button>
       </form></div>`;
     slot.querySelector("form").addEventListener("submit", async e => {
       e.preventDefault();
@@ -270,7 +270,7 @@ function profileModal(afterSave) {
           <label for="tex-int">Areas of interest <span class="tex-f-help">— separated by commas</span></label>
           <input class="tex-in" id="tex-int" value="${esc((p.interests || []).join(", "))}"
             placeholder="Self-study, clinical practice, doctoral preparation" required></div>
-        <button class="tex-btn" type="submit" style="width:100%;margin-top:8px">Save and continue</button>
+        <button class="texc-btn" type="submit" style="width:100%;margin-top:8px">Save and continue</button>
       </form></div>`;
 
     slot.querySelector("form").addEventListener("submit", async e => {
@@ -331,7 +331,7 @@ function reportModal(commentId) {
           <label for="tex-why">What is wrong with it?</label>
           <textarea class="tex-in" id="tex-why" rows="3"
             placeholder="Identifies a candidate by name, for example"></textarea></div>
-        <button class="tex-btn tex-btn-warn" type="submit" style="width:100%">Send the report</button>
+        <button class="texc-btn texc-btn-warn" type="submit" style="width:100%">Send the report</button>
       </form></div>`;
     slot.querySelector("form").addEventListener("submit", async e => {
       e.preventDefault();
@@ -350,7 +350,7 @@ function reportModal(commentId) {
         <div class="tex-m-head"><h2 class="tex-m-t">Thank you</h2>
           <p class="tex-m-b">The editorial team will look at it. You will not hear back unless
             we need to ask you something.</p></div>
-        <div class="tex-m-body"><button class="tex-btn-2" type="button" style="width:100%">Close</button></div>`;
+        <div class="tex-m-body"><button class="texc-btn-2" type="button" style="width:100%">Close</button></div>`;
       slot.querySelector("button").onclick = closeModal;
     });
   });
@@ -434,8 +434,8 @@ class TexComments extends HTMLElement {
           <div class="tex-c-wall-b">Members are teacher educators writing under their own names.
             Joining is free.</div>
           <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap">
-            <button class="tex-btn" type="button" data-a="join">Join the Community</button>
-            <button class="tex-btn-2" type="button" data-a="in">Sign in</button>
+            <button class="texc-btn" type="button" data-a="join">Join the Community</button>
+            <button class="texc-btn-2" type="button" data-a="in">Sign in</button>
           </div>
         </div>`;
     }
@@ -457,8 +457,8 @@ class TexComments extends HTMLElement {
 
     if (!signedIn && n === 0) {
       html += `<div class="tex-c-composer" style="text-align:center">
-        <button class="tex-btn" type="button" data-a="join">Join the Community</button>
-        <button class="tex-btn-2" type="button" data-a="in" style="margin-left:8px">Sign in</button>
+        <button class="texc-btn" type="button" data-a="join">Join the Community</button>
+        <button class="texc-btn-2" type="button" data-a="in" style="margin-left:8px">Sign in</button>
       </div>`;
     } else if (signedIn) {
       const who = state.profile?.full_name || "you";
@@ -478,7 +478,7 @@ class TexComments extends HTMLElement {
                   <div class="tex-c-as">Posting as <strong>${esc(who)}</strong>${where}</div>
                   <div class="tex-c-rule">Real names. No identifying details about people or places.</div>
                 </div>
-                <button class="tex-btn" type="button" data-a="post">
+                <button class="texc-btn" type="button" data-a="post">
                   ${this.replyTo ? "Post reply" : "Post comment"}</button>
               </div>
             </div>
@@ -619,8 +619,8 @@ class TexMembers extends HTMLElement {
           <div class="tex-dir-gate-b">Members can see who else is here, what they work on, and
             where they sit — so collaborations can start. Joining is free.</div>
           <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap">
-            <button class="tex-btn" type="button" data-a="join">Join the Community</button>
-            <button class="tex-btn-2" type="button" data-a="in">Sign in</button>
+            <button class="texc-btn" type="button" data-a="join">Join the Community</button>
+            <button class="texc-btn-2" type="button" data-a="in">Sign in</button>
           </div>
         </div>`;
       this.wire();
