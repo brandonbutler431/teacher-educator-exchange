@@ -1,0 +1,239 @@
+/* The Teacher Educator Exchange — community styles
+   Matches the site: Source Serif 4 headings, #1355c7 blue, #c25510 orange,
+   #11265c navy, #f7f5f1 ground, #e6e2db hairlines. */
+
+.tex-c {
+  --blue: #1355c7;
+  --blue-dark: #0d3f96;
+  --blue-pale: #f4f8ff;
+  --blue-line: #dbe6f7;
+  --orange: #c25510;
+  --orange-dark: #9e4009;
+  --orange-pale: #fdf6f1;
+  --navy: #11265c;
+  --ink: #16233a;
+  --ink-2: #26334a;
+  --grey: #5b6879;
+  --grey-2: #8a94a6;
+  --line: #e6e2db;
+  --line-2: #f0ece5;
+  --paper: #fbfaf8;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+  display: block;
+  margin: 40px 0;
+}
+
+.tex-c *, .tex-c *::before, .tex-c *::after { box-sizing: border-box; }
+.tex-c button { font-family: inherit; }
+
+.tex-c-head {
+  padding: 22px 26px;
+  border-bottom: 1px solid var(--line-2);
+  background: var(--paper);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.tex-c-kicker {
+  font-size: 11.5px; font-weight: 800; letter-spacing: .09em; color: var(--blue);
+}
+.tex-c-prompt {
+  margin: 8px 0 0;
+  font-family: "Source Serif 4", Georgia, serif;
+  font-size: 24px; line-height: 1.15; font-weight: 700; color: var(--navy);
+}
+.tex-c-count { font-size: 14px; color: #7c8798; white-space: nowrap; }
+
+/* ---------------------------------------------------------------- thread */
+
+.tex-c-list { padding: 8px 26px 4px; }
+.tex-c-item { padding: 18px 0; border-bottom: 1px solid #f3f0ea; }
+.tex-c-item:last-child { border-bottom: 0; }
+.tex-c-item.is-reply { margin-left: 44px; }
+
+.tex-c-row { display: grid; grid-template-columns: 44px 1fr; gap: 14px; align-items: start; }
+.tex-c-av {
+  width: 44px; height: 44px; border-radius: 50%; overflow: hidden;
+  background: #e2e8f1; flex: none;
+}
+.tex-c-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.tex-c-byline { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.tex-c-name { font-size: 15.5px; font-weight: 700; color: var(--navy); }
+.tex-c-role { font-size: 13.5px; color: var(--grey-2); }
+.tex-c-when { font-size: 13px; color: #a6aebb; }
+.tex-c-body {
+  margin-top: 7px; font-size: 15.5px; line-height: 1.6; color: var(--ink-2);
+  white-space: pre-wrap; overflow-wrap: break-word;
+}
+.tex-c-acts { display: flex; gap: 16px; margin-top: 10px; }
+.tex-c-act {
+  border: 0; background: none; padding: 0; cursor: pointer;
+  font-size: 13.5px; font-weight: 700; color: var(--blue);
+}
+.tex-c-act:hover { color: var(--blue-dark); }
+.tex-c-act.is-quiet { font-weight: 400; color: var(--grey-2); }
+.tex-c-act.is-quiet:hover { color: var(--orange); }
+.tex-c-act:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 2px; }
+
+/* ------------------------------------------------------------ empty state */
+
+.tex-c-empty { padding: 30px 26px 26px; text-align: center; }
+.tex-c-empty-ic {
+  margin: 0 auto; width: 46px; height: 46px; border-radius: 50%;
+  background: var(--blue-pale); display: grid; place-items: center;
+}
+.tex-c-empty-t {
+  margin-top: 12px; font-family: "Source Serif 4", Georgia, serif;
+  font-size: 21px; line-height: 1.2; font-weight: 700; color: var(--navy);
+}
+.tex-c-empty-b {
+  margin: 8px auto 0; font-size: 15px; line-height: 1.6;
+  color: var(--grey); max-width: 520px;
+}
+
+/* -------------------------------------------------------------- the wall */
+
+.tex-c-tease { position: relative; padding: 0 26px; }
+.tex-c-tease-in { position: relative; height: 96px; overflow: hidden; opacity: .4; }
+.tex-c-tease-fade {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 96px;
+  background: linear-gradient(180deg, rgba(255,255,255,0) 0%, #fff 72%);
+}
+.tex-c-skel-row { display: grid; grid-template-columns: 44px 1fr; gap: 14px; padding-top: 14px; }
+.tex-c-skel-av { width: 44px; height: 44px; border-radius: 50%; background: #dde4ee; }
+.tex-c-skel-l { height: 13px; width: 190px; border-radius: 3px; background: #dde4ee; }
+.tex-c-skel-p { height: 11px; border-radius: 3px; background: #e9edf3; margin-top: 10px; }
+
+.tex-c-wall {
+  margin: 0 26px 26px; border: 1px solid var(--blue-line); border-radius: 6px;
+  background: var(--blue-pale); padding: 22px 24px; text-align: center;
+}
+.tex-c-wall-t {
+  font-family: "Source Serif 4", Georgia, serif;
+  font-size: 20px; line-height: 1.2; font-weight: 700; color: var(--navy);
+}
+.tex-c-wall-b {
+  margin: 8px auto 0; font-size: 15px; line-height: 1.55; color: #4a5771; max-width: 460px;
+}
+
+/* ------------------------------------------------------------- composer */
+
+.tex-c-composer { border-top: 1px solid var(--line-2); background: var(--paper); padding: 22px 26px; }
+.tex-c-hint { font-size: 13.5px; color: #7c8798; }
+.tex-c-ta {
+  width: 100%; margin-top: 8px; border: 1px solid #d9d4cb; border-radius: 4px;
+  padding: 12px 13px; font-size: 15.5px; line-height: 1.55; font-family: inherit;
+  color: var(--ink); background: #fff; resize: vertical; min-height: 84px;
+}
+.tex-c-ta:focus { outline: none; border-color: var(--blue); }
+.tex-c-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; margin-top: 10px; flex-wrap: wrap;
+}
+.tex-c-as { font-size: 13px; color: var(--grey-2); }
+.tex-c-as strong { color: var(--navy); }
+.tex-c-rule { font-size: 12.5px; color: var(--grey-2); margin-top: 2px; }
+
+/* -------------------------------------------------------------- buttons */
+
+.tex-btn {
+  padding: 12px 24px; border: 0; border-radius: 4px; background: var(--blue);
+  color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;
+  font-family: inherit; line-height: 1.2;
+}
+.tex-btn:hover { background: var(--blue-dark); }
+.tex-btn:disabled { opacity: .45; cursor: default; }
+.tex-btn-2 {
+  padding: 12px 24px; border: 1px solid #c8d6ea; border-radius: 4px; background: #fff;
+  color: var(--navy); font-size: 15px; font-weight: 700; cursor: pointer;
+  font-family: inherit; line-height: 1.2;
+}
+.tex-btn-2:hover { background: #eef4fd; }
+.tex-btn-sm { padding: 9px 16px; font-size: 13.5px; }
+.tex-btn-warn { background: var(--orange); }
+.tex-btn-warn:hover { background: var(--orange-dark); }
+.tex-btn:focus-visible, .tex-btn-2:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+
+/* ---------------------------------------------------------------- modal */
+
+.tex-m-back {
+  position: fixed; inset: 0; background: rgba(17,38,92,.42);
+  display: grid; place-items: center; padding: 24px; z-index: 9999;
+  overflow-y: auto;
+}
+.tex-m {
+  background: #fff; border-radius: 8px; width: 100%; max-width: 480px;
+  box-shadow: 0 24px 60px rgba(16,40,80,.22); overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  color: #16233a;
+}
+.tex-m.is-wide { max-width: 560px; }
+.tex-m *, .tex-m *::before, .tex-m *::after { box-sizing: border-box; }
+.tex-m-head { padding: 24px 28px 0; }
+.tex-m-kicker { font-size: 11.5px; font-weight: 800; letter-spacing: .09em; color: #1355c7; }
+.tex-m-t {
+  margin: 8px 0 0; font-family: "Source Serif 4", Georgia, serif;
+  font-size: 25px; line-height: 1.15; font-weight: 700; color: #11265c;
+}
+.tex-m-b { margin-top: 8px; font-size: 15px; line-height: 1.55; color: #5b6879; }
+.tex-m-body { padding: 20px 28px 26px; }
+.tex-m-x {
+  position: absolute; top: 14px; right: 16px; border: 0; background: none;
+  font-size: 22px; line-height: 1; color: #8a94a6; cursor: pointer; padding: 6px;
+}
+.tex-m-x:hover { color: #11265c; }
+.tex-m-wrap { position: relative; }
+
+.tex-f { margin-bottom: 14px; }
+.tex-f label { display: block; font-size: 13px; font-weight: 700; color: #26334a; }
+.tex-f .tex-f-help { font-weight: 400; color: #8a94a6; }
+.tex-in {
+  width: 100%; margin-top: 6px; border: 1px solid #d9d4cb; border-radius: 4px;
+  padding: 11px 12px; font-size: 15px; font-family: inherit; background: #fff; color: #16233a;
+}
+.tex-in:focus { outline: none; border-color: #1355c7; }
+.tex-check { display: flex; gap: 10px; align-items: flex-start; margin: 16px 0 4px; }
+.tex-check input { margin: 3px 0 0; width: 16px; height: 16px; flex: none; accent-color: #1355c7; }
+.tex-check label { font-size: 14px; line-height: 1.5; color: #26334a; font-weight: 400; }
+
+.tex-err {
+  margin: 12px 0 0; border-left: 3px solid #c25510; background: #fdf6f1;
+  padding: 10px 14px; font-size: 14.5px; line-height: 1.45; color: #8a3c0c;
+}
+.tex-ok {
+  margin: 12px 0 0; border-left: 3px solid #1355c7; background: #f4f8ff;
+  padding: 10px 14px; font-size: 14.5px; line-height: 1.45; color: #11265c;
+}
+.tex-m-alt { margin-top: 16px; font-size: 14px; color: #5b6879; text-align: center; }
+.tex-m-alt button {
+  border: 0; background: none; padding: 0; cursor: pointer;
+  font-size: 14px; font-weight: 700; color: #1355c7; font-family: inherit;
+}
+.tex-m-alt button:hover { color: #0d3f96; }
+
+/* ----------------------------------------------------------- moderation */
+
+.tex-c-mod { border-top: 1px solid var(--line-2); padding: 22px 26px; }
+.tex-c-mod-k { font-size: 11.5px; font-weight: 800; letter-spacing: .09em; color: var(--grey-2); }
+.tex-c-flag {
+  margin-top: 14px; border: 1px solid #f0dfd2; border-left: 3px solid var(--orange);
+  border-radius: 5px; background: var(--orange-pale); padding: 16px 18px;
+}
+.tex-c-flag-acts { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+
+/* --------------------------------------------------------------- mobile */
+
+@media (max-width: 600px) {
+  .tex-c-head, .tex-c-list, .tex-c-composer, .tex-c-mod { padding-left: 18px; padding-right: 18px; }
+  .tex-c-wall, .tex-c-tease { margin-left: 18px; margin-right: 18px; padding-left: 0; padding-right: 0; }
+  .tex-c-item.is-reply { margin-left: 20px; }
+  .tex-c-prompt { font-size: 21px; }
+}
