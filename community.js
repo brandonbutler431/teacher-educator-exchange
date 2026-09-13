@@ -363,8 +363,11 @@ class TexComments extends HTMLElement {
     this.className = "tex-c";
     this.itemType = this.getAttribute("item-type") || "story";
     this.itemSlug = this.getAttribute("item-slug") || location.pathname.split("/").filter(Boolean).pop() || "";
-    this.itemTitle = this.getAttribute("item-title") || document.title;
-    this.prompt = (this.getAttribute("prompt") || "").trim() || DEFAULT_PROMPT;
+    this.itemTitle = this.getAttribute("item-title")
+      || document.querySelector("h1")?.textContent.trim()
+      || document.title;
+    this.prompt = (this.getAttribute("prompt")
+      || document.querySelector("[data-tex-prompt]")?.textContent || "").trim() || DEFAULT_PROMPT;
     this.comments = [];
     this.replyTo = null;
     this.unsub = onChange(() => this.render());
