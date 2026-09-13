@@ -247,18 +247,29 @@ function resetModal() {
 
 /* --------------------------------------------------------------- profile */
 
+const LOOKING_FOR = [
+  "Collaborators for a project",
+  "Co-authors",
+  "A mentor",
+  "Someone to mentor",
+  "Tools I can adapt",
+  "People working on the same problem"
+];
+
 function profileModal(afterSave) {
   openModal(slot => {
     const p = state.profile || {};
+    const want = p.looking_for || [];
     slot.innerHTML = `
       <div class="tex-m-head">
-        <div class="tex-m-kicker">ONE STEP LEFT</div>
-        <h2 class="tex-m-t">Finish your profile</h2>
+        <div class="tex-m-kicker">${profileComplete(p) ? "YOUR PROFILE" : "ONE STEP LEFT"}</div>
+        <h2 class="tex-m-t">${profileComplete(p) ? "Edit your profile" : "Finish your profile"}</h2>
         <p class="tex-m-b">Colleagues respond differently when they know who is speaking.
-          Four fields, once.</p>
+          The first four are needed before your first comment; the rest are how people find you.</p>
       </div>
       <div class="tex-m-body"><form novalidate>
-        <div class="tex-f"><label for="tex-ph">Photograph</label>
+        <div class="tex-f"><label for="tex-ph">Photograph${p.photo_url
+          ? ` <span class="tex-f-help">— leave empty to keep the current one</span>` : ""}</label>
           <input class="tex-in" id="tex-ph" type="file" accept="image/*"></div>
         <div class="tex-f"><label for="tex-i">Institution or organization</label>
           <input class="tex-in" id="tex-i" value="${esc(p.institution || "")}"
@@ -270,7 +281,29 @@ function profileModal(afterSave) {
           <label for="tex-int">Areas of interest <span class="tex-f-help">— separated by commas</span></label>
           <input class="tex-in" id="tex-int" value="${esc((p.interests || []).join(", "))}"
             placeholder="Self-study, clinical practice, doctoral preparation" required></div>
-        <button class="texc-btn" type="submit" style="width:100%;margin-top:8px">Save and continue</button>
+
+        <div class="tex-m-div">Optional</div>
+
+        <div class="tex-f">
+          <label for="tex-about">Your teaching and research
+            <span class="tex-f-help">— a short paragraph</span></label>
+          <textarea class="tex-in" id="tex-about" rows="4"
+            placeholder="The courses you teach, what you are researching, and what you are working on right now.">${esc(p.about || "")}</textarea></div>
+
+        <div class="tex-f">
+          <label for="tex-links">Links <span class="tex-f-help">— one per line</span></label>
+          <textarea class="tex-in" id="tex-links" rows="3"
+            placeholder="https://scholar.google.com/...&#10;https://orcid.org/...">${esc((p.links || []).join("\n"))}</textarea></div>
+
+        <div class="tex-f">
+          <label>What you are hoping to find here</label>
+          <div class="tex-chips">${LOOKING_FOR.map((o, i) => `
+            <label class="tex-chip">
+              <input type="checkbox" data-lf="${esc(o)}" ${want.includes(o) ? "checked" : ""}>
+              <span>${esc(o)}</span>
+            </label>`).join("")}</div></div>
+
+        <button class="texc-btn" type="submit" style="width:100%;margin-top:14px">Save</button>
       </form></div>`;
 
     slot.querySelector("form").addEventListener("submit", async e => {
@@ -278,7 +311,13 @@ function profileModal(afterSave) {
       const inst = slot.querySelector("#tex-i").value.trim();
       const role = slot.querySelector("#tex-r").value.trim();
       const ints = slot.querySelector("#tex-int").value.split(",").map(s => s.trim()).filter(Boolean);
+      const about = slot.querySelector("#tex-about").value.trim();
+      const links = slot.querySelector("#tex-links").value.split(/\n+/)
+        .map(s => s.trim()).filter(Boolean)
+        .map(s => /^https?:\/\//i.test(s) ? s : "https://" + s);
+      const lf = [...slot.querySelectorAll("[data-lf]:checked")].map(el => el.dataset.lf);
       const file = slot.querySelector("#tex-ph").files[0];
+
       if (!inst || !role || !ints.length)
         return setMsg(slot, "tex-err", "Institution, role, and at least one area of interest, please.");
       if (!file && !p.photo_url)
@@ -290,7 +329,7 @@ function profileModal(afterSave) {
       let photo = p.photo_url || null;
       if (file) {
         if (file.size > 5 * 1024 * 1024) {
-          btn.disabled = false; btn.textContent = "Save and continue";
+          btn.disabled = false; btn.textContent = "Save";
           return setMsg(slot, "tex-err", "That image is over 5 MB — please use a smaller one.");
         }
         const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
@@ -298,23 +337,27 @@ function profileModal(afterSave) {
         const { error: upErr } = await sb.storage.from("avatars")
           .upload(path, file, { upsert: true, cacheControl: "3600" });
         if (upErr) {
-          btn.disabled = false; btn.textContent = "Save and continue";
+          btn.disabled = false; btn.textContent = "Save";
           return setMsg(slot, "tex-err", "The photograph would not upload. Try a JPEG or PNG.");
         }
-        photo = sb.storage.from("avatars").getPublicUrl(path).data.publicUrl;
+        photo = sb.storage.from("avatars").getPublicUrl(path).data.publicUrl
+          + "?v=" + Date.now();
       }
 
       const { error } = await sb.from("profiles")
-        .update({ institution: inst, role, interests: ints, photo_url: photo })
+        .update({
+          institution: inst, role, interests: ints, photo_url: photo,
+          about: about || null, links, looking_for: lf
+        })
         .eq("id", state.user.id);
-      btn.disabled = false; btn.textContent = "Save and continue";
+      btn.disabled = false; btn.textContent = "Save";
       if (error) return setMsg(slot, "tex-err", error.message);
 
       await refresh();
       closeModal();
       afterSave?.();
     });
-  });
+  }, { wide: true });
 }
 
 /* ---------------------------------------------------------------- report */
@@ -596,7 +639,7 @@ class TexMembers extends HTMLElement {
 
   async load() {
     const { data } = await sb.from("profiles")
-      .select("id, full_name, photo_url, institution, role, interests")
+      .select("id, full_name, photo_url, institution, role, interests, about, links, looking_for")
       .not("institution", "is", null)
       .order("full_name", { ascending: true });
     this.members = data || [];
@@ -607,7 +650,8 @@ class TexMembers extends HTMLElement {
   matches(m) {
     const q = this.q.trim().toLowerCase();
     if (!q) return true;
-    return [m.full_name, m.institution, m.role, ...(m.interests || [])]
+    return [m.full_name, m.institution, m.role, m.about,
+            ...(m.interests || []), ...(m.looking_for || [])]
       .filter(Boolean).join(" ").toLowerCase().includes(q);
   }
 
@@ -632,10 +676,11 @@ class TexMembers extends HTMLElement {
     this.innerHTML = `
       <div class="tex-dir-bar">
         <input class="tex-dir-search" type="search" value="${esc(this.q)}"
-          placeholder="Search by name, institution, role, or interest">
+          placeholder="Search by name, institution, role, interest, or what someone is looking for">
         <div class="tex-dir-count">${list.length === this.members.length
           ? `${this.members.length} member${this.members.length === 1 ? "" : "s"}`
           : `${list.length} of ${this.members.length}`}</div>
+        <button class="texc-btn-2 texc-btn-sm" type="button" data-a="edit">Edit my profile</button>
       </div>
       ${!this.loaded ? `<div class="tex-dir-note">Loading…</div>` : ""}
       ${this.loaded && list.length === 0 ? `<div class="tex-dir-note">
@@ -658,14 +703,29 @@ class TexMembers extends HTMLElement {
   }
 
   cardHTML(m) {
+    const mine = state.user && m.id === state.user.id;
+    const host = u => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return u; } };
     return `
       <div class="tex-dir-card">
-        <div class="tex-dir-av">${avatar(m)}</div>
-        <div class="tex-dir-name">${esc(m.full_name)}</div>
-        <div class="tex-dir-role">${esc(m.role || "")}</div>
-        <div class="tex-dir-inst">${esc(m.institution || "")}</div>
+        <div class="tex-dir-top">
+          <div class="tex-dir-av">${avatar(m)}</div>
+          <div>
+            <div class="tex-dir-name">${esc(m.full_name)}${mine
+              ? ` <span class="tex-dir-you">you</span>` : ""}</div>
+            <div class="tex-dir-role">${esc(m.role || "")}</div>
+            <div class="tex-dir-inst">${esc(m.institution || "")}</div>
+          </div>
+        </div>
+        ${m.about ? `<p class="tex-dir-about">${esc(m.about)}</p>` : ""}
         ${(m.interests || []).length ? `<div class="tex-dir-tags">${
           m.interests.map(i => `<span class="tex-dir-tag">${esc(i)}</span>`).join("")
+        }</div>` : ""}
+        ${(m.looking_for || []).length ? `<div class="tex-dir-want">
+          <div class="tex-dir-want-k">LOOKING FOR</div>
+          <div class="tex-dir-want-v">${esc(m.looking_for.join(" \u00b7 "))}</div>
+        </div>` : ""}
+        ${(m.links || []).length ? `<div class="tex-dir-links">${
+          m.links.map(u => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(host(u))}</a>`).join("")
         }</div>` : ""}
       </div>`;
   }
@@ -675,6 +735,7 @@ class TexMembers extends HTMLElement {
       el.onclick = () => {
         if (el.dataset.a === "join") joinModal(() => this.load());
         if (el.dataset.a === "in")   signInModal(() => this.load());
+        if (el.dataset.a === "edit") profileModal(() => this.load());
       };
     });
   }
