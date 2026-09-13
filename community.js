@@ -581,6 +581,107 @@ class TexComments extends HTMLElement {
 
 customElements.define("tex-comments", TexComments);
 
+/* --------------------------------------------------------- <tex-members> */
+
+class TexMembers extends HTMLElement {
+  connectedCallback() {
+    this.className = "tex-dir";
+    this.q = "";
+    this.members = [];
+    this.loaded = false;
+    this.unsub = onChange(() => this.render());
+    this.load();
+  }
+  disconnectedCallback() { this.unsub?.(); }
+
+  async load() {
+    const { data } = await sb.from("profiles")
+      .select("id, full_name, photo_url, institution, role, interests")
+      .not("institution", "is", null)
+      .order("full_name", { ascending: true });
+    this.members = data || [];
+    this.loaded = true;
+    this.render();
+  }
+
+  matches(m) {
+    const q = this.q.trim().toLowerCase();
+    if (!q) return true;
+    return [m.full_name, m.institution, m.role, ...(m.interests || [])]
+      .filter(Boolean).join(" ").toLowerCase().includes(q);
+  }
+
+  render() {
+    if (!state.user) {
+      this.innerHTML = `
+        <div class="tex-dir-gate">
+          <div class="tex-dir-gate-t">The directory is for members</div>
+          <div class="tex-dir-gate-b">Members can see who else is here, what they work on, and
+            where they sit — so collaborations can start. Joining is free.</div>
+          <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap">
+            <button class="tex-btn" type="button" data-a="join">Join the Community</button>
+            <button class="tex-btn-2" type="button" data-a="in">Sign in</button>
+          </div>
+        </div>`;
+      this.wire();
+      return;
+    }
+
+    const list = this.members.filter(m => this.matches(m));
+
+    this.innerHTML = `
+      <div class="tex-dir-bar">
+        <input class="tex-dir-search" type="search" value="${esc(this.q)}"
+          placeholder="Search by name, institution, role, or interest">
+        <div class="tex-dir-count">${list.length === this.members.length
+          ? `${this.members.length} member${this.members.length === 1 ? "" : "s"}`
+          : `${list.length} of ${this.members.length}`}</div>
+      </div>
+      ${!this.loaded ? `<div class="tex-dir-note">Loading…</div>` : ""}
+      ${this.loaded && list.length === 0 ? `<div class="tex-dir-note">
+        ${this.q ? "No one matches that search yet." : "No members with completed profiles yet."}
+      </div>` : ""}
+      <div class="tex-dir-grid">${list.map(m => this.cardHTML(m)).join("")}</div>`;
+
+    const input = this.querySelector(".tex-dir-search");
+    if (input) {
+      input.oninput = e => {
+        this.q = e.target.value;
+        const pos = e.target.selectionStart;
+        this.render();
+        const next = this.querySelector(".tex-dir-search");
+        next.focus();
+        next.setSelectionRange(pos, pos);
+      };
+    }
+    this.wire();
+  }
+
+  cardHTML(m) {
+    return `
+      <div class="tex-dir-card">
+        <div class="tex-dir-av">${avatar(m)}</div>
+        <div class="tex-dir-name">${esc(m.full_name)}</div>
+        <div class="tex-dir-role">${esc(m.role || "")}</div>
+        <div class="tex-dir-inst">${esc(m.institution || "")}</div>
+        ${(m.interests || []).length ? `<div class="tex-dir-tags">${
+          m.interests.map(i => `<span class="tex-dir-tag">${esc(i)}</span>`).join("")
+        }</div>` : ""}
+      </div>`;
+  }
+
+  wire() {
+    this.querySelectorAll("[data-a]").forEach(el => {
+      el.onclick = () => {
+        if (el.dataset.a === "join") joinModal(() => this.load());
+        if (el.dataset.a === "in")   signInModal(() => this.load());
+      };
+    });
+  }
+}
+
+customElements.define("tex-members", TexMembers);
+
 /* --------------------------------------------------- site-wide helpers */
 // Any element with data-tex="join" / "signin" / "signout" / "account" works anywhere
 // on the site — nav buttons, the community page, the footer.

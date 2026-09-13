@@ -229,6 +229,59 @@
 }
 .tex-c-flag-acts { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
 
+/* ----------------------------------------------------- member directory */
+
+.tex-dir { display: block; }
+.tex-dir-bar {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+.tex-dir-search {
+  flex: 1 1 280px; min-width: 0;
+  border: 1px solid #d9d4cb; border-radius: 4px; padding: 13px 15px;
+  font-size: 16px; font-family: inherit; color: #16233a; background: #fff;
+}
+.tex-dir-search:focus { outline: none; border-color: #1355c7; }
+.tex-dir-count { font-size: 14px; color: #8a94a6; white-space: nowrap; }
+
+.tex-dir-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px;
+}
+.tex-dir-card {
+  border: 1px solid #e6e2db; border-radius: 6px; background: #fff; padding: 22px 20px;
+}
+.tex-dir-av {
+  width: 64px; height: 64px; border-radius: 50%; overflow: hidden;
+  background: #e2e8f1; margin-bottom: 14px;
+}
+.tex-dir-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tex-dir-name {
+  font-family: "Source Serif 4", Georgia, serif;
+  font-size: 18px; line-height: 1.2; font-weight: 700; color: #11265c;
+}
+.tex-dir-role { margin-top: 5px; font-size: 14px; line-height: 1.4; color: #5b6879; }
+.tex-dir-inst { margin-top: 2px; font-size: 14px; line-height: 1.4; color: #8a94a6; }
+.tex-dir-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.tex-dir-tag {
+  font-size: 12px; line-height: 1.3; padding: 4px 9px; border-radius: 3px;
+  background: #f4f8ff; color: #1355c7; border: 1px solid #dbe6f7;
+}
+.tex-dir-note {
+  border: 1px solid #e6e2db; border-radius: 6px; background: #fff;
+  padding: 26px; text-align: center; font-size: 15px; color: #5b6879;
+}
+.tex-dir-gate {
+  border: 1px solid #dbe6f7; border-radius: 6px; background: #f4f8ff;
+  padding: 34px 28px; text-align: center;
+}
+.tex-dir-gate-t {
+  font-family: "Source Serif 4", Georgia, serif;
+  font-size: 22px; line-height: 1.2; font-weight: 700; color: #11265c;
+}
+.tex-dir-gate-b {
+  margin: 8px auto 0; font-size: 15px; line-height: 1.55; color: #4a5771; max-width: 460px;
+}
+
 /* --------------------------------------------------------------- mobile */
 
 @media (max-width: 600px) {
