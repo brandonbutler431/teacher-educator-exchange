@@ -70,7 +70,7 @@
   width: 44px; height: 44px; border-radius: 50%; overflow: hidden;
   background: #e2e8f1; flex: none;
 }
-.tex-c-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tex-c-av img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; display: block; }
 
 .tex-c-byline { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .tex-c-name { font-size: 15.5px; font-weight: 700; color: var(--navy); }
@@ -279,7 +279,7 @@
   width: 64px; height: 64px; border-radius: 50%; overflow: hidden;
   background: #e2e8f1; flex: none;
 }
-.tex-dir-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tex-dir-av img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; display: block; }
 .tex-dir-name {
   font-family: "Source Serif 4", Georgia, serif;
   font-size: 18px; line-height: 1.2; font-weight: 700; color: #11265c;
@@ -330,3 +330,49 @@
   .tex-c-item.is-reply { margin-left: 20px; }
   .tex-c-prompt { font-size: 21px; }
 }
+
+
+/* ---------------------------------------------------------------- cropper */
+.tex-crop {
+  display: flex; gap: 18px; align-items: flex-start;
+  margin-top: 12px; padding: 14px; border: 1px solid #d6dde7; background: #f7f9fc;
+}
+.tex-crop-c {
+  width: 220px; height: 220px; flex: none;
+  border-radius: 50%; background: #e2e8f1;
+  cursor: grab; touch-action: none;
+  box-shadow: 0 0 0 1px #c9d3e0;
+}
+.tex-crop-c:active { cursor: grabbing; }
+.tex-crop-side { padding-top: 4px; }
+.tex-crop-hint { margin: 0 0 14px; font-size: 14px; line-height: 1.45; color: #4a5568; }
+.tex-crop-zl {
+  display: block; font-size: 12px; letter-spacing: .08em;
+  text-transform: uppercase; color: #6b7688;
+}
+.tex-crop-z { display: block; width: 200px; max-width: 100%; margin-top: 8px; }
+.tex-crop-adj {
+  display: inline-block; margin-top: 8px; padding: 0;
+  background: none; border: 0; border-bottom: 1px solid currentColor;
+  font: inherit; font-size: 14px; color: #3d6288; cursor: pointer;
+}
+.tex-crop-adj:hover { color: #1d1f20; }
+.tex-crop-adj:disabled { opacity: .45; cursor: default; }
+@media (max-width: 560px) {
+  .tex-crop { flex-direction: column; align-items: center; }
+  .tex-crop-side { text-align: center; }
+}
+
+
+/* ------------------------------------------------------ member-to-member */
+.tex-chip-wide { align-items: flex-start; width: 100%; line-height: 1.45; }
+.tex-chip-wide em { font-style: italic; }
+
+.tex-dir-write {
+  display: inline-block; margin-top: 16px;
+  padding: 8px 16px; border: 1px solid #3d6288;
+  font-size: 13px; letter-spacing: .06em; text-transform: uppercase;
+  color: #3d6288; text-decoration: none; background: none;
+}
+.tex-dir-write:hover { background: #3d6288; color: #fff; }
+.tex-dir-write:focus-visible { outline: 2px solid #3d6288; outline-offset: 2px; }

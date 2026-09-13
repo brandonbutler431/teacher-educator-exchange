@@ -256,6 +256,94 @@ const LOOKING_FOR = [
   "People working on the same problem"
 ];
 
+/* --------------------------------------------------------------- cropper */
+/* A square drag-and-zoom cropper: members place their own face in the frame
+   and we upload the cropped square, so no avatar is centre-cropped through
+   the top of someone's head. */
+function mountCropper(box) {
+  const S = 220, OUT = 480;
+  box.innerHTML = `
+    <canvas class="tex-crop-c" width="${S}" height="${S}"></canvas>
+    <div class="tex-crop-side">
+      <p class="tex-crop-hint">Drag the photograph to place your face in the frame, and zoom to fit.</p>
+      <label class="tex-crop-zl">Zoom
+        <input class="tex-crop-z" type="range" min="1" max="3" step="0.01" value="1">
+      </label>
+    </div>`;
+  const cv = box.querySelector("canvas"), ctx = cv.getContext("2d");
+  const zoom = box.querySelector(".tex-crop-z");
+  let img = null, z = 1, ox = 0, oy = 0;
+
+  const dims = () => {
+    const eff = (S / Math.min(img.naturalWidth, img.naturalHeight)) * z;
+    return [img.naturalWidth * eff, img.naturalHeight * eff];
+  };
+  const draw = () => {
+    ctx.clearRect(0, 0, S, S);
+    if (!img) return;
+    const [dw, dh] = dims();
+    ox = Math.min(0, Math.max(S - dw, ox));
+    oy = Math.min(0, Math.max(S - dh, oy));
+    ctx.drawImage(img, ox, oy, dw, dh);
+  };
+
+  let drag = null;
+  const down = e => {
+    if (!img) return;
+    const t = e.touches ? e.touches[0] : e;
+    drag = { x: t.clientX, y: t.clientY, ox, oy };
+    e.preventDefault();
+  };
+  const move = e => {
+    if (!drag) return;
+    const t = e.touches ? e.touches[0] : e;
+    ox = drag.ox + (t.clientX - drag.x);
+    oy = drag.oy + (t.clientY - drag.y);
+    draw(); e.preventDefault();
+  };
+  const up = () => { drag = null; };
+  cv.addEventListener("mousedown", down);
+  cv.addEventListener("touchstart", down, { passive: false });
+  window.addEventListener("mousemove", move);
+  window.addEventListener("touchmove", move, { passive: false });
+  window.addEventListener("mouseup", up);
+  window.addEventListener("touchend", up);
+
+  zoom.addEventListener("input", () => {
+    if (!img) return;
+    const k = +zoom.value / z; z = +zoom.value;
+    ox = S / 2 - (S / 2 - ox) * k;
+    oy = S / 2 - (S / 2 - oy) * k;
+    draw();
+  });
+
+  return {
+    ready: () => !!img,
+    load(src) {
+      return new Promise((res, rej) => {
+        const i = new Image();
+        i.crossOrigin = "anonymous";
+        i.onload = () => {
+          img = i; z = 1; zoom.value = "1";
+          const [dw, dh] = dims();
+          ox = (S - dw) / 2; oy = (S - dh) / 2;
+          box.hidden = false; draw(); res();
+        };
+        i.onerror = rej;
+        i.src = src;
+      });
+    },
+    blob() {
+      if (!img) return null;
+      const out = document.createElement("canvas");
+      out.width = out.height = OUT;
+      const k = OUT / S, [dw, dh] = dims();
+      out.getContext("2d").drawImage(img, ox * k, oy * k, dw * k, dh * k);
+      return new Promise(res => out.toBlob(res, "image/jpeg", 0.9));
+    }
+  };
+}
+
 function profileModal(afterSave) {
   openModal(slot => {
     const p = state.profile || {};
@@ -270,7 +358,9 @@ function profileModal(afterSave) {
       <div class="tex-m-body"><form novalidate>
         <div class="tex-f"><label for="tex-ph">Photograph${p.photo_url
           ? ` <span class="tex-f-help">— leave empty to keep the current one</span>` : ""}</label>
-          <input class="tex-in" id="tex-ph" type="file" accept="image/*"></div>
+          <input class="tex-in" id="tex-ph" type="file" accept="image/*">
+          ${p.photo_url ? `<button class="tex-crop-adj" type="button">Reposition the photograph you have</button>` : ""}
+          <div class="tex-crop" hidden></div></div>
         <div class="tex-f"><label for="tex-i">Institution or organization</label>
           <input class="tex-in" id="tex-i" value="${esc(p.institution || "")}"
             placeholder="Old Dominion University" required></div>
@@ -303,8 +393,35 @@ function profileModal(afterSave) {
               <span>${esc(o)}</span>
             </label>`).join("")}</div></div>
 
+        <div class="tex-f">
+          <label>Being reachable</label>
+          <label class="tex-chip tex-chip-wide">
+            <input type="checkbox" id="tex-contact" ${p.contact_ok ? "checked" : ""}>
+            <span>Let members write to me — shows a <em>Write to</em> link on my directory entry,
+              which opens their mail program addressed to me. Your address is never shown on the
+              page, and never to anyone who is not signed in.</span>
+          </label></div>
+
         <button class="texc-btn" type="submit" style="width:100%;margin-top:14px">Save</button>
       </form></div>`;
+
+    const cropper = mountCropper(slot.querySelector(".tex-crop"));
+    slot.querySelector("#tex-ph").addEventListener("change", e => {
+      const f = e.target.files[0];
+      if (!f) return;
+      if (f.size > 15 * 1024 * 1024)
+        return setMsg(slot, "tex-err", "That image is very large — please use one under 15 MB.");
+      const url = URL.createObjectURL(f);
+      cropper.load(url)
+        .catch(() => setMsg(slot, "tex-err", "That file would not open as an image."));
+    });
+    slot.querySelector(".tex-crop-adj")?.addEventListener("click", ev => {
+      ev.target.disabled = true;
+      cropper.load(p.photo_url).catch(() => {
+        ev.target.disabled = false;
+        setMsg(slot, "tex-err", "That photograph could not be loaded for repositioning — please upload it again.");
+      });
+    });
 
     slot.querySelector("form").addEventListener("submit", async e => {
       e.preventDefault();
@@ -316,26 +433,22 @@ function profileModal(afterSave) {
         .map(s => s.trim()).filter(Boolean)
         .map(s => /^https?:\/\//i.test(s) ? s : "https://" + s);
       const lf = [...slot.querySelectorAll("[data-lf]:checked")].map(el => el.dataset.lf);
-      const file = slot.querySelector("#tex-ph").files[0];
+      const contactOk = slot.querySelector("#tex-contact").checked;
+      const cropped = cropper.ready() ? await cropper.blob() : null;
 
       if (!inst || !role || !ints.length)
         return setMsg(slot, "tex-err", "Institution, role, and at least one area of interest, please.");
-      if (!file && !p.photo_url)
+      if (!cropped && !p.photo_url)
         return setMsg(slot, "tex-err", "A photograph, please — this is a room of colleagues.");
 
       const btn = slot.querySelector('button[type="submit"]');
       btn.disabled = true; btn.textContent = "Saving…"; setMsg(slot, "tex-err", "");
 
       let photo = p.photo_url || null;
-      if (file) {
-        if (file.size > 5 * 1024 * 1024) {
-          btn.disabled = false; btn.textContent = "Save";
-          return setMsg(slot, "tex-err", "That image is over 5 MB — please use a smaller one.");
-        }
-        const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-        const path = `${state.user.id}/avatar.${ext}`;
+      if (cropped) {
+        const path = `${state.user.id}/avatar.jpg`;
         const { error: upErr } = await sb.storage.from("avatars")
-          .upload(path, file, { upsert: true, cacheControl: "3600" });
+          .upload(path, cropped, { upsert: true, contentType: "image/jpeg", cacheControl: "3600" });
         if (upErr) {
           btn.disabled = false; btn.textContent = "Save";
           return setMsg(slot, "tex-err", "The photograph would not upload. Try a JPEG or PNG.");
@@ -347,7 +460,9 @@ function profileModal(afterSave) {
       const { error } = await sb.from("profiles")
         .update({
           institution: inst, role, interests: ints, photo_url: photo,
-          about: about || null, links, looking_for: lf
+          about: about || null, links, looking_for: lf,
+          contact_ok: contactOk,
+          contact_email: contactOk ? (state.user.email || null) : null
         })
         .eq("id", state.user.id);
       btn.disabled = false; btn.textContent = "Save";
@@ -639,7 +754,7 @@ class TexMembers extends HTMLElement {
 
   async load() {
     const { data } = await sb.from("profiles")
-      .select("id, full_name, photo_url, institution, role, interests, about, links, looking_for")
+      .select("id, full_name, photo_url, institution, role, interests, about, links, looking_for, contact_ok, contact_email")
       .not("institution", "is", null)
       .order("full_name", { ascending: true });
     this.members = data || [];
@@ -727,6 +842,9 @@ class TexMembers extends HTMLElement {
         ${(m.links || []).length ? `<div class="tex-dir-links">${
           m.links.map(u => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(host(u))}</a>`).join("")
         }</div>` : ""}
+        ${!mine && state.user && m.contact_ok && m.contact_email ? `<a class="tex-dir-write"
+          href="mailto:${esc(m.contact_email)}?subject=${encodeURIComponent(
+            "From the Teacher Educator Exchange")}">Write to ${esc(m.full_name.split(" ")[0])}</a>` : ""}
       </div>`;
   }
 
@@ -776,15 +894,20 @@ onChange(paintGlobal);
 document.addEventListener("DOMContentLoaded", () => { wireGlobal(); paintGlobal(); });
 wireGlobal();
 
-/* ?join=1 (or #join) opens the signup modal — the link to put in emails and invitations. */
+/* ?join=1 (or #join) opens the signup modal — the link to put in emails and invitations.
+   Does nothing for a signed-in member with a complete profile, which is correct. */
 (function autoOpen() {
   const wants = /[?&]join=1/.test(location.search) || location.hash === "#join";
   if (!wants) return;
+  const go = () => {
+    if (!state.user) joinModal();
+    else if (!profileComplete(state.profile)) profileModal();
+  };
+  if (state.ready) return go();
   const off = onChange(() => {
     if (!state.ready) return;
     off();
-    if (!state.user) joinModal();
-    else if (!profileComplete(state.profile)) profileModal();
+    go();
   });
 })();
 
