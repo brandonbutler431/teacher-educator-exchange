@@ -2,7 +2,11 @@
    Matches the site: Source Serif 4 headings, #1355c7 blue, #c25510 orange,
    #11265c navy, #f7f5f1 ground, #e6e2db hairlines. */
 
-.tex-c {
+.tex-c,
+.tex-m-back,
+.tex-dir,
+.texc-btn,
+.texc-btn-2 {
   --blue: #1355c7;
   --blue-dark: #0d3f96;
   --blue-pale: #f4f8ff;
@@ -18,6 +22,9 @@
   --line: #e6e2db;
   --line-2: #f0ece5;
   --paper: #fbfaf8;
+}
+
+.tex-c {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   color: var(--ink);
   border: 1px solid var(--line);
@@ -145,22 +152,24 @@
 /* -------------------------------------------------------------- buttons */
 
 .texc-btn {
-  padding: 12px 24px; border: 0; border-radius: 4px; background: var(--blue);
+  padding: 12px 24px; border: 0; border-radius: 4px; background: #1355c7;
   color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;
-  font-family: inherit; line-height: 1.2;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  line-height: 1.2; text-decoration: none; display: inline-block; text-align: center;
 }
-.texc-btn:hover { background: var(--blue-dark); }
+.texc-btn:hover { background: #0d3f96; color: #fff; }
 .texc-btn:disabled { opacity: .45; cursor: default; }
 .texc-btn-2 {
   padding: 12px 24px; border: 1px solid #c8d6ea; border-radius: 4px; background: #fff;
-  color: var(--navy); font-size: 15px; font-weight: 700; cursor: pointer;
-  font-family: inherit; line-height: 1.2;
+  color: #11265c; font-size: 15px; font-weight: 700; cursor: pointer;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  line-height: 1.2; text-decoration: none; display: inline-block; text-align: center;
 }
-.texc-btn-2:hover { background: #eef4fd; }
+.texc-btn-2:hover { background: #eef4fd; color: #11265c; }
 .texc-btn-sm { padding: 9px 16px; font-size: 13.5px; }
-.texc-btn-warn { background: var(--orange); }
-.texc-btn-warn:hover { background: var(--orange-dark); }
-.texc-btn:focus-visible, .texc-btn-2:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+.texc-btn-warn { background: #c25510; }
+.texc-btn-warn:hover { background: #9e4009; }
+.texc-btn:focus-visible, .texc-btn-2:focus-visible { outline: 2px solid #11265c; outline-offset: 2px; }
 
 /* ---------------------------------------------------------------- modal */
 
