@@ -5,7 +5,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import {
   SUPABASE_URL, SUPABASE_KEY, FREE_READ_COUNT,
-  GUIDELINES_URL, DEFAULT_PROMPT
+  GUIDELINES_URL, DEFAULT_PROMPT, SPACES, THREAD_URL
 } from "./config.js";
 
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -451,7 +451,8 @@ function profileModal(afterSave) {
           .upload(path, cropped, { upsert: true, contentType: "image/jpeg", cacheControl: "3600" });
         if (upErr) {
           btn.disabled = false; btn.textContent = "Save";
-          return setMsg(slot, "tex-err", "The photograph would not upload. Try a JPEG or PNG.");
+          return setMsg(slot, "tex-err",
+            "The photograph would not upload — " + (upErr.message || "unknown error") + ".");
         }
         photo = sb.storage.from("avatars").getPublicUrl(path).data.publicUrl
           + "?v=" + Date.now();
@@ -912,3 +913,315 @@ wireGlobal();
 })();
 
 export { sb, state, joinModal, signInModal, profileModal, onChange };
+
+/* ----------------------------------------------------------------- spaces */
+// <tex-spaces> — the /community page. Space cards swap in place for that
+// space's thread list; an individual conversation gets its own address.
+
+const spaceBySlug = s => SPACES.find(x => x.slug === s) || null;
+const threadHref = id => THREAD_URL + "?id=" + id;
+
+const PIECE_PATH = { story: "/story/", toolkit: "/toolkits/", shelf: "/shelf/" };
+
+function threadModal(space, afterPost) {
+  openModal(slot => {
+    slot.innerHTML = `
+      <div class="tex-m-head">
+        <div class="tex-m-kicker">${esc(space.name.toUpperCase())}</div>
+        <h2 class="tex-m-t">Start a conversation</h2>
+        <p class="tex-m-b">Write the way you would to a colleague who knows the work:
+          what you are sitting with, what you have tried, and what you want from the room.</p>
+      </div>
+      <div class="tex-m-body"><form novalidate>
+        <div class="tex-f"><label for="tex-tt">Title</label>
+          <input class="tex-in" id="tex-tt" maxlength="160"
+            placeholder="How do you handle a mentor teacher who will not let a candidate teach?" required></div>
+        <div class="tex-f"><label for="tex-tb">What you want to ask or say</label>
+          <textarea class="tex-in" id="tex-tb" rows="8"
+            placeholder="Give enough context that someone can answer usefully — and no identifying details about people, candidates, or schools."></textarea></div>
+        <button class="texc-btn" type="submit" style="width:100%;margin-top:10px">Post the conversation</button>
+      </form></div>`;
+
+    slot.querySelector("form").addEventListener("submit", async e => {
+      e.preventDefault();
+      const title = slot.querySelector("#tex-tt").value.trim();
+      const body = slot.querySelector("#tex-tb").value.trim();
+      if (title.length < 4) return setMsg(slot, "tex-err", "A title, please — it is how people decide to read.");
+      if (body.length < 2) return setMsg(slot, "tex-err", "Say a little more about what you are asking.");
+
+      const btn = slot.querySelector('button[type="submit"]');
+      btn.disabled = true; btn.textContent = "Posting…"; setMsg(slot, "tex-err", "");
+
+      const { data, error } = await sb.from("threads")
+        .insert({ space: space.slug, author_id: state.user.id, title, body })
+        .select("id").single();
+
+      btn.disabled = false; btn.textContent = "Post the conversation";
+      if (error) return setMsg(slot, "tex-err", error.message);
+      closeModal();
+      afterPost?.(data.id);
+    });
+  }, { wide: true });
+}
+
+class TexSpaces extends HTMLElement {
+  connectedCallback() {
+    this.className = "tex-sp";
+    this.threads = [];
+    this.counts = {};
+    this.latest = [];
+    this.space = (location.hash || "").replace(/^#/, "") || null;
+    this.onHash = () => { this.space = (location.hash || "").replace(/^#/, "") || null; this.render(); };
+    window.addEventListener("hashchange", this.onHash);
+    this.unsub = onChange(() => this.load());
+    this.load();
+  }
+  disconnectedCallback() {
+    this.unsub?.();
+    window.removeEventListener("hashchange", this.onHash);
+  }
+
+  async load() {
+    if (state.user) {
+      const [{ data: th }, { data: reps }] = await Promise.all([
+        sb.from("threads")
+          .select("id, space, title, body, created_at, is_pinned, profiles(full_name, photo_url, role, institution)")
+          .order("is_pinned", { ascending: false })
+          .order("created_at", { ascending: false }),
+        sb.from("comments").select("item_slug, created_at").eq("item_type", "thread")
+      ]);
+      this.threads = th || [];
+      this.counts = {};
+      (reps || []).forEach(r => {
+        const k = r.item_slug;
+        const c = this.counts[k] || { n: 0, last: null };
+        c.n += 1;
+        if (!c.last || r.created_at > c.last) c.last = r.created_at;
+        this.counts[k] = c;
+      });
+    }
+    const { data: lat } = await sb.from("comments")
+      .select("id, item_type, item_slug, item_title, body, created_at, profiles(full_name)")
+      .in("item_type", ["story", "toolkit", "shelf"])
+      .order("created_at", { ascending: false })
+      .limit(4);
+    this.latest = lat || [];
+    this.render();
+  }
+
+  activity(t) {
+    const c = this.counts[String(t.id)];
+    return (c?.last && c.last > t.created_at) ? c.last : t.created_at;
+  }
+
+  render() {
+    if (!state.ready) { this.innerHTML = ""; return; }
+
+    let html = this.latestHTML();
+
+    if (!state.user) {
+      html += `
+        <div class="tex-c-wall" style="margin-top:22px">
+          <div class="tex-c-wall-t">The conversations are for members</div>
+          <div class="tex-c-wall-b">Members are teacher educators writing under their own names.
+            Joining is free, and takes a minute.</div>
+          <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap">
+            <button class="texc-btn" type="button" data-a="join">Join the Community</button>
+            <button class="texc-btn-2" type="button" data-a="in">Sign in</button>
+          </div>
+        </div>`;
+      this.innerHTML = html;
+      return this.wire();
+    }
+
+    const space = spaceBySlug(this.space);
+    html += space ? this.threadListHTML(space) : this.cardsHTML();
+    this.innerHTML = html;
+    this.wire();
+  }
+
+  latestHTML() {
+    if (!this.latest.length) return "";
+    return `
+      <div class="tex-sp-latest">
+        <div class="tex-sp-latest-h">LATEST ACROSS THE EXCHANGE</div>
+        <div class="tex-sp-latest-g">${this.latest.map(c => `
+          <a class="tex-sp-latest-i" href="${esc((PIECE_PATH[c.item_type] || "/") + c.item_slug)}">
+            <div class="tex-sp-latest-on">${esc(c.item_title)}</div>
+            <div class="tex-sp-latest-b">${esc(c.body.length > 140 ? c.body.slice(0, 140) + "…" : c.body)}</div>
+            <div class="tex-sp-latest-m">${esc(c.profiles?.full_name || "Member")} · ${esc(ago(c.created_at))}</div>
+          </a>`).join("")}</div>
+      </div>`;
+  }
+
+  cardsHTML() {
+    return `
+      <div class="tex-sp-grid">${SPACES.map(s => {
+        const mine = this.threads.filter(t => t.space === s.slug);
+        const newest = mine[0];
+        const n = mine.length;
+        return `
+          <a class="tex-sp-card" href="#${esc(s.slug)}">
+            <div class="tex-sp-card-n">${esc(s.name)}</div>
+            <div class="tex-sp-card-b">${esc(s.blurb)}</div>
+            <div class="tex-sp-card-f">
+              <span class="tex-sp-card-c">${n === 0 ? "No conversations yet"
+                : n === 1 ? "1 conversation" : n + " conversations"}</span>
+              ${newest ? `<span class="tex-sp-card-l">${esc(newest.title.length > 60
+                ? newest.title.slice(0, 60) + "…" : newest.title)}</span>` : ""}
+            </div>
+          </a>`;
+      }).join("")}</div>`;
+  }
+
+  threadListHTML(space) {
+    const list = this.threads.filter(t => t.space === space.slug)
+      .sort((a, b) => (b.is_pinned - a.is_pinned) || (this.activity(b) > this.activity(a) ? 1 : -1));
+    return `
+      <div class="tex-sp-bar">
+        <a class="tex-sp-back" href="#">← All spaces</a>
+        <button class="texc-btn" type="button" data-a="new">Start a conversation</button>
+      </div>
+      <div class="tex-sp-head">
+        <h2 class="tex-sp-h">${esc(space.name)}</h2>
+        <p class="tex-sp-p">${esc(space.blurb)}</p>
+      </div>
+      ${list.length ? `<div class="tex-sp-threads">${list.map(t => {
+        const c = this.counts[String(t.id)] || { n: 0 };
+        const p = t.profiles || {};
+        return `
+          <a class="tex-sp-thread" href="${esc(threadHref(t.id))}">
+            <div class="tex-sp-thread-av">${avatar(p)}</div>
+            <div class="tex-sp-thread-m">
+              <div class="tex-sp-thread-t">${t.is_pinned
+                ? '<span class="tex-sp-pin">STANDING</span>' : ""}${esc(t.title)}</div>
+              <div class="tex-sp-thread-b">${esc(t.body.length > 160 ? t.body.slice(0, 160) + "…" : t.body)}</div>
+              <div class="tex-sp-thread-by">${esc(p.full_name || "Member")}${p.institution
+                ? " · " + esc(p.institution) : ""} · ${esc(ago(this.activity(t)))}</div>
+            </div>
+            <div class="tex-sp-thread-n">${c.n}<span>${c.n === 1 ? "reply" : "replies"}</span></div>
+          </a>`;
+      }).join("")}</div>`
+      : `<div class="tex-c-empty">
+          <div class="tex-c-empty-t">Nothing here yet</div>
+          <div class="tex-c-empty-b">Someone has to go first. A question you are genuinely
+            stuck on is worth more to this room than a finished answer.</div>
+          <div style="margin-top:16px"><button class="texc-btn" type="button" data-a="new">Start a conversation</button></div>
+        </div>`}`;
+  }
+
+  wire() {
+    this.querySelectorAll("[data-a]").forEach(el => {
+      el.onclick = () => {
+        const a = el.dataset.a;
+        if (a === "join") return joinModal(() => this.load());
+        if (a === "in")   return signInModal(() => this.load());
+        if (a === "new") {
+          const space = spaceBySlug(this.space);
+          if (!space) return;
+          if (!profileComplete(state.profile))
+            return profileModal(() => threadModal(space, id => { location.href = threadHref(id); }));
+          return threadModal(space, id => { location.href = threadHref(id); });
+        }
+      };
+    });
+  }
+}
+
+customElements.define("tex-spaces", TexSpaces);
+
+/* ----------------------------------------------------------------- thread */
+// <tex-thread> — one conversation, at /thread?id=N. Replies are ordinary
+// comments, so the whole comment component is reused verbatim.
+
+class TexThread extends HTMLElement {
+  connectedCallback() {
+    this.className = "tex-th";
+    this.id_ = Number(new URLSearchParams(location.search).get("id")) || null;
+    this.thread = null;
+    this.unsub = onChange(() => this.load());
+    this.load();
+  }
+  disconnectedCallback() { this.unsub?.(); }
+
+  async load() {
+    if (!state.ready) return;
+    if (!this.id_) { this.thread = null; return this.render(); }
+    const { data } = await sb.from("threads")
+      .select("*, profiles(full_name, photo_url, role, institution)")
+      .eq("id", this.id_).maybeSingle();
+    this.thread = data || null;
+    this.render();
+  }
+
+  render() {
+    if (!state.ready) { this.innerHTML = ""; return; }
+
+    if (!state.user) {
+      this.innerHTML = `
+        <div class="tex-c-wall">
+          <div class="tex-c-wall-t">This conversation is for members</div>
+          <div class="tex-c-wall-b">Members are teacher educators writing under their own names.
+            Joining is free.</div>
+          <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap">
+            <button class="texc-btn" type="button" data-a="join">Join the Community</button>
+            <button class="texc-btn-2" type="button" data-a="in">Sign in</button>
+          </div>
+        </div>`;
+      return this.wire();
+    }
+
+    const t = this.thread;
+    if (!t) {
+      this.innerHTML = `
+        <div class="tex-c-empty">
+          <div class="tex-c-empty-t">This conversation is not here</div>
+          <div class="tex-c-empty-b">It may have been removed by its author or by an editor.</div>
+          <div style="margin-top:16px"><a class="texc-btn" href="/community">Back to the spaces</a></div>
+        </div>`;
+      return this.wire();
+    }
+
+    const space = spaceBySlug(t.space);
+    const p = t.profiles || {};
+    const mine = t.author_id === state.user.id;
+    const editor = !!state.profile?.is_editor;
+
+    this.innerHTML = `
+      <div class="tex-th-bar">
+        <a class="tex-sp-back" href="/community#${esc(t.space)}">←
+          ${esc(space ? space.name : "All spaces")}</a>
+        ${mine || editor ? `<button class="tex-c-act is-quiet" type="button" data-a="del">Delete</button>` : ""}
+      </div>
+      <h1 class="tex-th-t">${esc(t.title)}</h1>
+      <div class="tex-th-by">
+        <div class="tex-c-av">${avatar(p)}</div>
+        <div>
+          <div class="tex-c-name">${esc(p.full_name || "Member")}</div>
+          <div class="tex-c-role">${esc([p.role, p.institution].filter(Boolean).join(", "))}
+            · ${esc(ago(t.created_at))}</div>
+        </div>
+      </div>
+      <div class="tex-th-b">${esc(t.body)}</div>
+      <tex-comments item-type="thread" item-slug="${t.id}"
+        item-title="${esc(t.title)}" prompt="Replies"></tex-comments>`;
+    this.wire();
+  }
+
+  wire() {
+    this.querySelectorAll("[data-a]").forEach(el => {
+      el.onclick = async () => {
+        const a = el.dataset.a;
+        if (a === "join") return joinModal(() => this.load());
+        if (a === "in")   return signInModal(() => this.load());
+        if (a === "del") {
+          if (!confirm("Delete this conversation and all of its replies?")) return;
+          await sb.from("threads").delete().eq("id", this.thread.id);
+          location.href = "/community#" + this.thread.space;
+        }
+      };
+    });
+  }
+}
+
+customElements.define("tex-thread", TexThread);

@@ -11,3 +11,26 @@ export const FREE_READ_COUNT = 2;
 
 export const GUIDELINES_URL = "/guidelines";
 export const DEFAULT_PROMPT = "How does this show up in your own work?";
+
+// Where an individual conversation lives. One page, thread id in the query.
+export const THREAD_URL = "/thread";
+
+// Discussion spaces. Three is deliberate — an empty space reads as a dead room,
+// so add the fourth when the third is busy. Order is display order.
+export const SPACES = [
+  {
+    slug: "teaching-practice",
+    name: "Teaching practice",
+    blurb: "Methods courses, assignments, feedback, and what happens when a class does not go the way you planned."
+  },
+  {
+    slug: "clinical-practice",
+    name: "Clinical practice & partnerships",
+    blurb: "Placements, mentor teachers, supervision, and the work of holding a school–university partnership together."
+  },
+  {
+    slug: "open-floor",
+    name: "Open floor",
+    blurb: "Introductions, questions that fit nowhere else, and what you would like the Exchange to become."
+  }
+];

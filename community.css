@@ -5,6 +5,8 @@
 .tex-c,
 .tex-m-back,
 .tex-dir,
+.tex-sp,
+.tex-th,
 .texc-btn,
 .texc-btn-2 {
   --blue: #1355c7;
@@ -376,3 +378,141 @@
 }
 .tex-dir-write:hover { background: #3d6288; color: #fff; }
 .tex-dir-write:focus-visible { outline: 2px solid #3d6288; outline-offset: 2px; }
+
+
+/* ------------------------------------------------------- spaces & threads */
+
+.tex-sp, .tex-th {
+  display: block;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  color: var(--ink);
+}
+.tex-sp *, .tex-sp *::before, .tex-sp *::after,
+.tex-th *, .tex-th *::before, .tex-th *::after { box-sizing: border-box; }
+.tex-sp button, .tex-th button { font-family: inherit; }
+.tex-sp a, .tex-th a { text-decoration: none; }
+
+/* the strip of conversation happening on published pieces */
+.tex-sp-latest { margin-bottom: 30px; }
+.tex-sp-latest-h {
+  font-size: 11.5px; font-weight: 800; letter-spacing: .09em;
+  color: var(--blue); margin-bottom: 12px;
+}
+.tex-sp-latest-g {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;
+}
+.tex-sp-latest-i {
+  display: block; border: 1px solid var(--line); border-radius: 6px;
+  background: #fff; padding: 15px 16px; color: inherit;
+}
+.tex-sp-latest-i:hover { border-color: var(--blue-line); box-shadow: 0 6px 18px rgba(16,40,80,.07); }
+.tex-sp-latest-on {
+  font-family: "Source Serif 4", Georgia, serif;
+  font-size: 15.5px; font-weight: 700; color: var(--navy); line-height: 1.25;
+}
+.tex-sp-latest-b {
+  margin-top: 8px; font-size: 14px; line-height: 1.5; color: var(--grey);
+  text-wrap: pretty;
+}
+.tex-sp-latest-m { margin-top: 10px; font-size: 12.5px; color: var(--grey-2); }
+
+/* space cards */
+.tex-sp-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;
+}
+.tex-sp-card {
+  display: flex; flex-direction: column; gap: 10px;
+  border: 1px solid var(--line); border-radius: 8px; background: #fff;
+  padding: 22px 24px; color: inherit;
+}
+.tex-sp-card:hover { border-color: var(--blue-line); box-shadow: 0 8px 24px rgba(16,40,80,.08); }
+.tex-sp-card-n {
+  font-family: "Source Serif 4", Georgia, serif;
+  font-size: 21px; line-height: 1.15; font-weight: 700; color: var(--navy);
+}
+.tex-sp-card-b { font-size: 15px; line-height: 1.5; color: var(--grey); text-wrap: pretty; }
+.tex-sp-card-f {
+  margin-top: auto; padding-top: 14px; border-top: 1px solid var(--line-2);
+  display: flex; flex-direction: column; gap: 4px;
+}
+.tex-sp-card-c { font-size: 12.5px; font-weight: 700; letter-spacing: .04em; color: var(--blue); }
+.tex-sp-card-l { font-size: 13.5px; color: var(--grey-2); }
+
+/* thread list within a space */
+.tex-sp-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap; margin-bottom: 18px;
+}
+.tex-sp-back { font-size: 14.5px; font-weight: 600; color: var(--blue); }
+.tex-sp-back:hover { color: var(--blue-dark); }
+.tex-sp-head { margin-bottom: 18px; }
+.tex-sp-h {
+  margin: 0; font-family: "Source Serif 4", Georgia, serif;
+  font-size: 30px; line-height: 1.12; font-weight: 700; color: var(--navy);
+}
+.tex-sp-p { margin: 8px 0 0; font-size: 16px; line-height: 1.5; color: var(--grey); max-width: 620px; }
+
+.tex-sp-threads { border-top: 1px solid var(--line); }
+.tex-sp-thread {
+  display: grid; grid-template-columns: 44px 1fr auto; gap: 16px;
+  align-items: start; padding: 20px 4px;
+  border-bottom: 1px solid var(--line); color: inherit;
+}
+.tex-sp-thread:hover { background: var(--paper); }
+.tex-sp-thread-av {
+  width: 44px; height: 44px; border-radius: 50%; overflow: hidden;
+  background: #e2e8f1; flex: none;
+}
+.tex-sp-thread-av img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; display: block; }
+.tex-sp-thread-t {
+  font-family: "Source Serif 4", Georgia, serif;
+  font-size: 18.5px; line-height: 1.25; font-weight: 700; color: var(--navy);
+}
+.tex-sp-pin {
+  display: inline-block; margin-right: 9px; padding: 2px 7px; border-radius: 3px;
+  background: var(--orange-pale); color: var(--orange-dark);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 10.5px; font-weight: 800; letter-spacing: .08em; vertical-align: 2px;
+}
+.tex-sp-thread-b {
+  margin-top: 6px; font-size: 14.5px; line-height: 1.5; color: var(--grey);
+  text-wrap: pretty;
+}
+.tex-sp-thread-by { margin-top: 8px; font-size: 12.5px; color: var(--grey-2); }
+.tex-sp-thread-n {
+  text-align: center; font-size: 19px; font-weight: 700; color: var(--navy);
+  min-width: 58px; line-height: 1.1;
+}
+.tex-sp-thread-n span { display: block; font-size: 11.5px; font-weight: 600; color: var(--grey-2); }
+
+/* one conversation */
+.tex-th { max-width: 780px; }
+.tex-th-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; margin-bottom: 16px;
+}
+.tex-th-t {
+  margin: 0; font-family: "Source Serif 4", Georgia, serif;
+  font-size: 34px; line-height: 1.14; font-weight: 700; color: var(--navy);
+  text-wrap: pretty;
+}
+.tex-th-by {
+  display: grid; grid-template-columns: 44px 1fr; gap: 14px;
+  align-items: center; margin-top: 18px;
+  padding-bottom: 18px; border-bottom: 1px solid var(--line);
+}
+.tex-th-b {
+  margin-top: 20px; font-size: 17.5px; line-height: 1.62; color: var(--ink-2);
+  white-space: pre-wrap; text-wrap: pretty;
+}
+.tex-th .tex-c { margin-top: 34px; }
+
+@media (max-width: 560px) {
+  .tex-sp-thread { grid-template-columns: 36px 1fr; }
+  .tex-sp-thread-n {
+    grid-column: 2; text-align: left; display: flex; gap: 5px; align-items: baseline;
+    font-size: 14px;
+  }
+  .tex-sp-thread-n span { font-size: 12.5px; }
+  .tex-th-t { font-size: 27px; }
+}
