@@ -7,6 +7,7 @@
 .tex-dir,
 .tex-sp,
 .tex-th,
+.tex-sh,
 .texc-btn,
 .texc-btn-2 {
   --blue: #1355c7;
@@ -516,3 +517,29 @@
   .tex-sp-thread-n span { font-size: 12.5px; }
   .tex-th-t { font-size: 27px; }
 }
+
+
+/* --------------------------------------------------------------- share */
+
+.tex-sh {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  padding: 16px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+}
+.tex-sh * , .tex-sh *::before, .tex-sh *::after { box-sizing: border-box; }
+.tex-sh-label {
+  font-size: 11.5px; font-weight: 800; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--grey-2);
+}
+.tex-sh-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tex-sh-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 36px; padding: 0 10px; border: 1px solid var(--line);
+  border-radius: 4px; background: #fff; cursor: pointer;
+  color: var(--navy); font: inherit; font-size: 13.5px; font-weight: 600;
+  text-decoration: none; transition: border-color .15s, color .15s, background .15s;
+}
+.tex-sh-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-pale); }
+.tex-sh-btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.tex-sh-copy { padding: 0 13px; }
+.tex-sh-btn.is-done { border-color: #bcd9c4; color: #1f7a43; background: #f2faf5; }

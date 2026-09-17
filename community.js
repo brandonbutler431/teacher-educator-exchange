@@ -1237,3 +1237,81 @@ class TexThread extends HTMLElement {
 }
 
 customElements.define("tex-thread", TexThread);
+
+/* ----------------------------------------------------------------- share */
+// Mount anywhere on a story / tool / perspective page:
+//   <tex-share></tex-share>
+// Optional attributes: url (defaults to canonical or current page),
+// title (defaults to the page h1 or document title), label.
+
+const SHARE_ICONS = {
+  facebook: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.52 1.49-3.91 3.77-3.91 1.1 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.78-1.63 1.57v1.89h2.78l-.45 2.91h-2.33V22c4.78-.79 8.44-4.94 8.44-9.94Z"/></svg>',
+  bluesky: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><path d="M6.1 3.3C8.5 5.1 11 8.8 12 10.8c1-2 3.5-5.7 5.9-7.5 1.7-1.3 4.1-1.9 4.1 1 0 .6-.3 4.9-.5 5.6-.6 2.4-3 3-5.2 2.7 3.8.6 4.8 2.8 2.7 4.9-3.9 4-5.6-1-6-2.3-.1-.3-.2-.6-.2-.4 0-.2-.1.1-.2.4-.4 1.3-2.1 6.3-6 2.3-2.1-2.1-1.1-4.3 2.7-4.9-2.2.3-4.6-.3-5.2-2.7C3.8 9.2 3.5 4.9 3.5 4.3c0-2.9 2.4-2.3 4.1-1Z"/></svg>',
+  linkedin: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9h4v12H3V9Zm6.5 0h3.8v1.65h.05c.53-.95 1.83-1.95 3.77-1.95 4.03 0 4.78 2.5 4.78 5.76V21h-4v-5.77c0-1.38-.03-3.15-1.96-3.15-1.97 0-2.27 1.5-2.27 3.05V21h-4V9Z"/></svg>',
+  link: '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l2.12-2.12a5 5 0 0 0-7.07-7.07L10.6 5.23"/><path d="M14 11a5 5 0 0 0-7.07 0L4.8 13.12a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg>',
+  check: '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>'
+};
+
+class TexShare extends HTMLElement {
+  connectedCallback() {
+    this.className = "tex-sh";
+    const canon = document.querySelector('link[rel="canonical"]')?.href;
+    this.url = this.getAttribute("url") || canon || location.href.split("#")[0];
+    this.title_ = this.getAttribute("title")
+      || document.querySelector("h1")?.textContent.trim()
+      || document.title;
+    this.label = this.getAttribute("label") || "Share this";
+    this.render();
+  }
+
+  links() {
+    const u = encodeURIComponent(this.url);
+    const t = encodeURIComponent(this.title_);
+    return {
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${u}`,
+      bluesky: `https://bsky.app/intent/compose?text=${t}%20${u}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${u}`
+    };
+  }
+
+  render() {
+    const l = this.links();
+    this.innerHTML = `
+      <span class="tex-sh-label">${esc(this.label)}</span>
+      <div class="tex-sh-row">
+        <a class="tex-sh-btn" href="${l.facebook}" target="_blank" rel="noopener"
+           aria-label="Share on Facebook" title="Share on Facebook">${SHARE_ICONS.facebook}</a>
+        <a class="tex-sh-btn" href="${l.bluesky}" target="_blank" rel="noopener"
+           aria-label="Share on Bluesky" title="Share on Bluesky">${SHARE_ICONS.bluesky}</a>
+        <a class="tex-sh-btn" href="${l.linkedin}" target="_blank" rel="noopener"
+           aria-label="Share on LinkedIn" title="Share on LinkedIn">${SHARE_ICONS.linkedin}</a>
+        <button class="tex-sh-btn tex-sh-copy" type="button" data-el="copy">
+          ${SHARE_ICONS.link}<span data-el="copytext">Copy link</span>
+        </button>
+      </div>`;
+
+    this.querySelector('[data-el="copy"]').onclick = async e => {
+      const btn = e.currentTarget;
+      const txt = btn.querySelector('[data-el="copytext"]');
+      try {
+        await navigator.clipboard.writeText(this.url);
+      } catch {
+        const ta = document.createElement("textarea");
+        ta.value = this.url;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+      }
+      btn.classList.add("is-done");
+      btn.firstElementChild.outerHTML = SHARE_ICONS.check;
+      txt.textContent = "Link copied";
+      clearTimeout(this._t);
+      this._t = setTimeout(() => this.render(), 2400);
+    };
+  }
+}
+
+customElements.define("tex-share", TexShare);
